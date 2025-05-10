@@ -6,9 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "tinyAgent_deepsearch"
 version = "0.1.1" # Version will be incremented before next publish
 authors = [
-    { name = "larock22 (Alchemist Studios AI)", email = "your_email@example.com" }, # Updated author
+    { name = "larock22", email = "your_email@example.com" }, # Refined author name
 ]
-description = "A Python library for performing deep research using AI agents and Firecrawl, from Alchemist Studios AI." # Added org to description
+description = "A Python library for performing deep research using AI agents and Firecrawl, from Alchemist Studios AI."
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT" # Use the SPDX identifier string for MIT
