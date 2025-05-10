@@ -1,0 +1,36 @@
+.aider*
+# Ignore all env files and directories
+.env
+*.env
+.env.*
+# Ignore common virtual environment directories
+venv/
+env/
+.venv/
+.env/
+ENV/
+ENV*/
+venv*/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.coverage
+*.log
+*.sqlite
+*.db
+traces.db
+tinyAgent_output/
+reports/ # If reports are generated and shouldn't be committed
+# Add other project-specific ignores below
+
+# Ignore all YAML files
+yaml/
+*.yml
+*.yaml

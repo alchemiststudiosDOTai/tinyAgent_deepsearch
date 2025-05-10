@@ -1,0 +1,5 @@
+tiny_agent_os
+pydantic 
+openai
+tenacity 
+firecrawl-py

@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tinyAgent_deepsearch"
+version = "0.1.1" # Version will be incremented before next publish
+authors = [
+    { name = "larock22 (Alchemist Studios AI)", email = "your_email@example.com" }, # Updated author
+]
+description = "A Python library for performing deep research using AI agents and Firecrawl, from Alchemist Studios AI." # Added org to description
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT" # Use the SPDX identifier string for MIT
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+]
+dependencies = [
+    "python-dotenv>=0.20.0", # For examples, not strictly for library runtime
+    "pydantic>=2.0.0",
+    "openai>=1.0.0",
+    "tenacity>=8.0.0",
+    "firecrawl-py>=0.0.14", # Check for the latest appropriate version
+    "tiny_agent_os",
+]
+
+[project.urls]
+Homepage = "https://github.com/alchemiststudiosDOTai/tinyAgent_deepsearch"
+Repository = "https://github.com/alchemiststudiosDOTai/tinyAgent_deepsearch"
+
+[tool.setuptools.packages.find]
+where = ["."] # look for packages in the current directory
+include = ["tinyAgent_deepsearch*"] # include all packages starting with tinyAgent_deepsearch
+exclude = ["tests*", "docs*", "examples*"] # exclude tests, docs, and examples
