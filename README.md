@@ -2,6 +2,8 @@
 
 `tinyAgent_deepsearch` is a Python library from [Alchemist Studios AI](https://github.com/alchemiststudiosDOTai), developed by [tunahorse21 (larock22)](https://x.com/tunahorse21), designed to facilitate deep research on various topics using AI agents, powered by OpenAI and Firecrawl for web scraping and content analysis. It leverages the `tiny_agent_os` framework for structuring AI agent interactions.
 
+> **Note:** Currently, `tinyAgent_deepsearch` uses Firecrawl for web research and content extraction. In the future, the plan is to combine various agent frameworks and tools—including `tiny_agent_os`, browser-based agents (such as browser-use), and other agentic utilities—to enable even more powerful, multi-modal research workflows. Stay tuned for updates as the project evolves!
+
 ## Features
 
 *   Perform recursive, multi-step research on a given topic.
