@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include pyproject.toml
+include tinyagent_deepsearch.png
+recursive-include tinyAgent_deepsearch *.py
+recursive-include tests *.py

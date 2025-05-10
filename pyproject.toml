@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tinyAgent_deepsearch"
-version = "0.1.1" # Version will be incremented before next publish
+version = "0.1.2" # Updated for image inclusion
 authors = [
     { name = "larock22", email = "your_email@example.com" }, # Refined author name
 ]
