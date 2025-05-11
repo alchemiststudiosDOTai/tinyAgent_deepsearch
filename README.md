@@ -1,10 +1,10 @@
-# tinyAgent_deepsearch
+# tinyagent_deepsearch
 
-![tinyAgent_deepsearch Logo](./tinyagent_deepsearch.png)
+![tinyagent_deepsearch Logo](./tinyagent_deepsearch.png)
 
-`tinyAgent_deepsearch` is a Python library from [Alchemist Studios AI](https://github.com/alchemiststudiosDOTai), developed by [tunahorse21 (larock22)](https://x.com/tunahorse21), designed to facilitate deep research on various topics using AI agents, powered by OpenAI and Firecrawl for web scraping and content analysis. It leverages the `tiny_agent_os` framework for structuring AI agent interactions.
+`tinyagent_deepsearch` is a Python library from [Alchemist Studios AI](https://github.com/alchemiststudiosDOTai), developed by [tunahorse21 (larock22)](https://x.com/tunahorse21), designed to facilitate deep research on various topics using AI agents, powered by OpenAI and Firecrawl for web scraping and content analysis. It leverages the `tiny_agent_os` framework for structuring AI agent interactions.
 
-> **Note:** Currently, `tinyAgent_deepsearch` uses Firecrawl for web research and content extraction. In the future, the plan is to combine various agents and tools—including `tiny_agent_os`, browser-based agents (such as browser-use), and other agentic utilities—to enable even more powerful, multi-modal research workflows. Stay tuned for updates as the project evolves!
+> **Note:** Currently, `tinyagent_deepsearch` uses Firecrawl for web research and content extraction. In the future, the plan is to combine various agents and tools—including `tiny_agent_os`, browser-based agents (such as browser-use), and other agentic utilities—to enable even more powerful, multi-modal research workflows. Stay tuned for updates as the project evolves!
 
 ## Features
 
@@ -16,10 +16,10 @@
 
 ## Installation
 
-You can install `tinyAgent_deepsearch` using pip:
+You can install `tinyagent_deepsearch` using pip:
 
 ```bash
-pip install tinyAgent_deepsearch 
+pip install tinyagent_deepsearch
 ```
 *(Note: This command assumes the package will be published to PyPI. For local installation from source, navigate to the project root directory where `pyproject.toml` is located and run `pip install .`)*
 
@@ -55,7 +55,7 @@ Here's a basic example of how to use the `deep_research` function:
 
 ```python
 import asyncio
-from tinyAgent_deepsearch import deep_research
+from tinyagent_deepsearch import deep_research
 from dotenv import load_dotenv # Optional: if you use a .env file
 
 async def main():
@@ -73,8 +73,15 @@ async def main():
             breadth=breadth,
             depth=depth,
             llm_model="gpt-4o-mini", # Optional: specify LLM model
-            concurrency=2           # Optional: specify concurrency
+            concurrency=2,           # Optional: specify concurrency
+            save_report=True,        # Optional: save research report to file
+            report_dir="research_reports", # Optional: custom report directory
+            report_format="json"    # Optional: 'json' or 'txt'
         )
+        
+        # If report was saved, show the path
+        if "report_path" in results:
+            print(f"Report saved to: {results['report_path']}")
         print("\n=== Research Complete ===")
         print("\nLearnings:")
         for i, learning in enumerate(results.get("learnings", [])):
@@ -95,11 +102,28 @@ if __name__ == "__main__":
 
 The `deep_research` function accepts the following parameters:
 
+### Core Parameters:
+
 *   `topic` (str): The initial research topic.
 *   `breadth` (int): The number of search queries to generate at each depth level.
 *   `depth` (int): The number of recursive research levels.
+
+### Model & Performance Settings:
+
 *   `llm_model` (str, optional): The OpenAI model to use. Defaults to `"gpt-4o-mini"`.
 *   `concurrency` (int, optional): The maximum number of concurrent search and digest operations. Defaults to `2`.
+
+### Report Generation:
+
+*   `save_report` (bool, optional): Whether to save the research results to a file. Defaults to `False`.
+*   `report_dir` (str | Path, optional): Directory where the report will be saved. If not provided, creates a 'reports' directory in the current working directory.
+*   `report_name` (str, optional): Name of the report file. If not provided, a name is generated based on the topic and timestamp.
+*   `report_format` (str, optional): Format of the report file. Can be 'json' or 'txt'. Defaults to 'json'.
+
+### Optional State:
+
+*   `learnings` (List[str], optional): Optional list of initial learnings to build upon.
+*   `visited` (List[str], optional): Optional list of initially visited URLs to avoid duplicates.
 
 ## Contributing
 

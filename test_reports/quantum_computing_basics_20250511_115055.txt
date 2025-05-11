@@ -1,0 +1,9 @@
+Research on: quantum computing basics
+
+FINDINGS:
+1. Quantum computing utilizes qubits that can exist in multiple states simultaneously (superposition), enabling exponential increases in computational power compared to classical bits, which exist as either 0 or 1.
+2. Quantum computers operate under principles of quantum mechanics, requiring stricter environmental controls (such as near absolute zero temperatures) to maintain qubit integrity, compared to classical computers which can function in typical room temperatures.
+
+SOURCES:
+1. https://www.techtarget.com/searchdatacenter/tip/Classical-vs-quantum-computing-What-are-the-differences
+2. https://www.quantropi.com/quantum-versus-classical-computing-and-the-quantum-threat/

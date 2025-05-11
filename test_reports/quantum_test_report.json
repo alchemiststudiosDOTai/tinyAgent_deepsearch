@@ -1,0 +1,10 @@
+{
+  "learnings": [
+    "Quantum entanglement and superposition provide a significant computational advantage over classical computing, enabling exponential scaling in computational power as more qubits are added, as opposed to the linear scaling of classical computers with more transistors.",
+    "Quantum computing uses qubits that can exist in multiple states simultaneously due to superposition, allowing for parallel processing of complex calculations. In contrast, classical computing relies on bits that represent either 0 or 1, performing operations sequentially and deterministically."
+  ],
+  "visited": [
+    "https://www.techtarget.com/searchdatacenter/tip/Classical-vs-quantum-computing-What-are-the-differences",
+    "https://www.quantropi.com/quantum-versus-classical-computing-and-the-quantum-threat/"
+  ]
+}

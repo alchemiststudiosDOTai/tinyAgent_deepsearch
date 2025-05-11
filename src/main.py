@@ -1,4 +1,4 @@
-# tinyagent_deep_research.py - tools for tinyAgent to make a deep research like, flow for query
+# tinyagent_deep_research.py - tools for tinyagent to make a deep research like, flow for query
 
 import os
 import math
@@ -44,12 +44,17 @@ class SearchDigest(BaseModel):
     learnings: List[str]
     follow_up_questions: List[str]
 
-# tooling for tinyAgent
+# tooling for tinyagent
 
+
+tool_usage_log = []
 
 @tool
 @retry(wait=wait_random_exponential(min=2, max=8), stop=stop_after_attempt(4))
 async def llm_complete(system: str, prompt: str, schema: type[BaseModel]) -> BaseModel:
+    entry = f"llm_complete(schema={schema})"
+    print(f"[TOOL] {entry}")
+    tool_usage_log.append(entry)
     """
     Hit the LLM using the .responses.parse() method for structured output.
     Returns the Pydantic model *instance*.
@@ -68,6 +73,9 @@ async def llm_complete(system: str, prompt: str, schema: type[BaseModel]) -> Bas
 
 @tool
 async def generate_search_queries(topic: str, prev_learnings: List[str], n: int = 3) -> List[SearchQuery]:
+    entry = f"generate_search_queries(topic={topic}, n={n})"
+    print(f"[TOOL] {entry}")
+    tool_usage_log.append(entry)
     system = "You're a research assistant that generates focused search queries. Consider previous learnings and create distinct queries that will uncover new information."
     prompt = f"""Topic: {topic}
 
@@ -86,6 +94,9 @@ async def generate_search_queries(topic: str, prev_learnings: List[str], n: int 
 
 @tool
 async def firecrawl_search(q: str, k: int = 2) -> List[dict]:
+    entry = f"firecrawl_search(q={q}, k={k})"
+    print(f"[TOOL] {entry}")
+    tool_usage_log.append(entry)
     from firecrawl import ScrapeOptions
     opts = ScrapeOptions(formats=["markdown"])
     res = firecrawl.search(q, limit=k, scrape_options=opts)
@@ -95,6 +106,9 @@ async def firecrawl_search(q: str, k: int = 2) -> List[dict]:
 
 @tool
 async def digest_search_result(q: str, snippets: List[str], max_learn: int = 2, max_follow: int = 2) -> SearchDigest:
+    entry = f"digest_search_result(q={q}, snippets=[{len(snippets)} items], max_learn={max_learn}, max_follow={max_follow})"
+    print(f"[TOOL] {entry}")
+    tool_usage_log.append(entry)
     joined = "\n".join(f"<content>{s}</content>" for s in snippets)
     prompt = (
         f"Analyze search results for: {q}\n"
@@ -167,3 +181,8 @@ if __name__ == "__main__":
     with open(report_path, "w") as f:
         json.dump(result, f, indent=2)
     print(f"Report saved to {report_path}")
+
+# Print the tool usage summary
+print("\n=== TOOL USAGE SUMMARY ===")
+for i, entry in enumerate(tool_usage_log, 1):
+    print(f"{i}. {entry}")

@@ -1,19 +1,20 @@
 import os
 import math
+import re
+import json
 import asyncio
 import logging
-from typing import List, Dict, Type
+from pathlib import Path
+from datetime import datetime
+from typing import List, Dict, Type, Optional, Union, Any, cast
 
 from pydantic import BaseModel, Field
 from firecrawl import FirecrawlApp, ScrapeOptions
 from openai import AsyncOpenAI
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 
-# Assuming tiny_agent_os provides 'tinyagent' import path
-# If 'tiny_agent_os' is the package and it has a 'tinyagent' module:
 from tinyagent.decorators import tool
-# The tiny_agent function itself is not directly used by the library's core logic,
-# but the @tool decorator is.
+from tinyagent.agent import tiny_agent  
 
 from .exceptions import MissingAPIKeyError, ConfigurationError
 
@@ -37,6 +38,15 @@ _openai_client = None
 _firecrawl_client = None
 
 def get_openai_client() -> AsyncOpenAI:
+    """
+    Gets or initializes the OpenAI client singleton.
+    
+    Returns:
+        AsyncOpenAI: The OpenAI client instance.
+        
+    Raises:
+        MissingAPIKeyError: If the OPENAI_KEY environment variable is not set.
+    """
     global _openai_client
     if _openai_client is None:
         api_key = os.getenv("OPENAI_KEY")
@@ -46,12 +56,21 @@ def get_openai_client() -> AsyncOpenAI:
     return _openai_client
 
 def get_firecrawl_client() -> FirecrawlApp:
+    """
+    Gets or initializes the Firecrawl client singleton.
+    
+    Returns:
+        FirecrawlApp: The Firecrawl client instance.
+        
+    Raises:
+        MissingAPIKeyError: If the FIRECRAWL_KEY environment variable is not set.
+    """
     global _firecrawl_client
     if _firecrawl_client is None:
         api_key = os.getenv("FIRECRAWL_KEY")
-        # Firecrawl key can be optional in its constructor, but we might want to enforce it
         if not api_key:
             raise MissingAPIKeyError("FIRECRAWL_KEY")
+        
         _firecrawl_client = FirecrawlApp(
             api_key=api_key,
             api_url=os.getenv("FIRECRAWL_BASE_URL", None)
@@ -62,8 +81,23 @@ def get_firecrawl_client() -> FirecrawlApp:
 @retry(wait=wait_random_exponential(min=2, max=8), stop=stop_after_attempt(4))
 async def _llm_complete(system: str, prompt: str, schema: Type[BaseModel], llm_model: str) -> BaseModel:
     """
-    Internal helper to hit the LLM using the .responses.parse() method.
+    Internal helper to hit the LLM using the .responses.parse() method for structured output.
+    
+    Args:
+        system: The system message to send to the LLM.
+        prompt: The user prompt to send to the LLM.
+        schema: The Pydantic model to use for parsing the response.
+        llm_model: The OpenAI model to use.
+        
+    Returns:
+        The parsed response as an instance of the provided schema.
+        
+    Raises:
+        ConfigurationError: If the LLM completion fails.
     """
+    print(f"[TOOL] _llm_complete called with llm_model={llm_model}")
+    log.info(f"[TOOL] _llm_complete called with system={system[:30]}..., prompt={prompt[:30]}..., schema={schema}, llm_model={llm_model}")
+    
     client = get_openai_client()
     try:
         response_obj = await client.responses.parse(
@@ -74,8 +108,7 @@ async def _llm_complete(system: str, prompt: str, schema: Type[BaseModel], llm_m
             ],
             text_format=schema,
         )
-        data_obj = response_obj.output_parsed
-        return data_obj
+        return cast(BaseModel, response_obj.output_parsed)
     except Exception as e:
         log.error(f"LLM completion failed for model {llm_model}: {e}")
         raise ConfigurationError(f"LLM completion error: {e}")
@@ -88,6 +121,7 @@ async def _generate_search_queries(
     llm_model: str,
     n: int = 3
 ) -> List[SearchQuery]:
+    log.info(f"[TOOL] _generate_search_queries called with topic={topic}, prev_learnings=[{len(prev_learnings)} items], llm_model={llm_model}, n={n}")
     system = "You're a research assistant that generates focused search queries. Consider previous learnings and create distinct queries that will uncover new information."
     prompt = f"""Topic: {topic}
 
@@ -107,6 +141,7 @@ async def _generate_search_queries(
 
 @tool
 async def _firecrawl_search(q: str, k: int = 2) -> List[dict]:
+    log.info(f"[TOOL] _firecrawl_search called with q={q}, k={k}")
     firecrawl_client = get_firecrawl_client()
     opts = ScrapeOptions(formats=["markdown"])
     try:
@@ -128,6 +163,7 @@ async def _digest_search_result(
     max_learn: int = 2,
     max_follow: int = 2
 ) -> SearchDigest:
+    log.info(f"[TOOL] _digest_search_result called with q={q}, snippets=[{len(snippets)} items], llm_model={llm_model}, max_learn={max_learn}, max_follow={max_follow}")
     # Indented block starts here
     joined = "\n".join(f"<content>{s}</content>" for s in snippets)
     prompt = (
@@ -144,15 +180,20 @@ async def _digest_search_result(
     )
 
 
+
 async def deep_research(
     topic: str,
     breadth: int,
     depth: int,
     llm_model: str = "gpt-4o-mini",
     concurrency: int = 2,
-    learnings: List[str] | None = None,
-    visited: List[str] | None = None
-) -> Dict:
+    learnings: Optional[List[str]] = None,
+    visited: Optional[List[str]] = None,
+    save_report: bool = False,
+    report_dir: Optional[Union[str, Path]] = None,
+    report_name: Optional[str] = None,
+    report_format: str = "json"
+) -> Dict[str, Any]:
     """
     Performs deep research on a given topic.
 
@@ -164,10 +205,15 @@ async def deep_research(
         concurrency: The maximum number of concurrent search and digest operations.
         learnings: Optional list of initial learnings.
         visited: Optional list of initially visited URLs.
+        save_report: Whether to save the research results to a file.
+        report_dir: Directory where the report will be saved. Defaults to './reports'.
+        report_name: Name of the report file. If not provided, a name will be generated based on the topic.
+        report_format: Format of the report file ('json' or 'txt'). Defaults to 'json'.
 
     Returns:
         A dictionary containing 'learnings' (a list of strings) and
-        'visited' (a list of unique URLs).
+        'visited' (a list of unique URLs). If save_report is True, also includes
+        'report_path' with the path to the saved report.
 
     Raises:
         MissingAPIKeyError: If OPENAI_KEY or FIRECRAWL_KEY are not set.
@@ -176,6 +222,12 @@ async def deep_research(
     # Ensure clients are attempted to be initialized early to catch API key errors
     get_openai_client()
     get_firecrawl_client()
+    
+    # Register tools with tinyagent - follows the pattern in src/main.py
+    tiny_agent(
+        tools=[_generate_search_queries, _firecrawl_search, _digest_search_result],
+        model=llm_model  # Pass the user-specified model to tinyagent
+    )
 
     current_learnings = learnings or []
     current_visited = visited or []
@@ -247,4 +299,47 @@ async def deep_research(
             log.warning(f"Unexpected result structure in deep_research aggregation: {res_item}")
 
 
-    return {"learnings": list(final_learnings), "visited": list(final_visited)}
+    result = {"learnings": list(final_learnings), "visited": list(final_visited)}
+    
+    # Save report if requested
+    if save_report:
+        # Determine report directory
+        report_path = Path(report_dir or Path.cwd() / "reports")
+        report_path.mkdir(parents=True, exist_ok=True)
+        
+        # Generate a filename if not provided
+        if report_name is None:
+            # Create a safe filename from the topic
+            safe_topic = re.sub(r'[^a-zA-Z0-9_-]', '_', topic.lower())[:50]
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            report_name = f"{safe_topic}_{timestamp}"
+        
+        # Add extension if not already present
+        if not report_name.endswith(f"."+report_format):
+            report_name = f"{report_name}."+report_format
+        
+        # Full path to the report file
+        full_report_path = report_path / report_name
+        
+        # Save the report
+        if report_format.lower() == "json":
+            with open(full_report_path, "w", encoding="utf-8") as f:
+                json.dump(result, f, indent=2, ensure_ascii=False)
+        elif report_format.lower() == "txt":
+            with open(full_report_path, "w", encoding="utf-8") as f:
+                f.write(f"Research on: {topic}\n\n")
+                f.write("FINDINGS:\n")
+                for i, learning in enumerate(result["learnings"], 1):
+                    f.write(f"{i}. {learning}\n")
+                f.write("\nSOURCES:\n")
+                for i, url in enumerate(result["visited"], 1):
+                    f.write(f"{i}. {url}\n")
+        else:
+            log.warning(f"Unsupported report format: {report_format}. Report not saved.")
+            
+        log.info(f"Research report saved to {full_report_path}")
+        
+        # Add report path to result
+        result["report_path"] = str(full_report_path)
+    
+    return result

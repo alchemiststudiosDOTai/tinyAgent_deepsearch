@@ -1,0 +1,9 @@
+{
+  "learnings": [
+    "Deep learning has matured from simple artificial neural networks into a structured taxonomy of architectures—including discriminative (CNNs, RNNs), generative (autoencoders, GANs) and hybrid models—each tailored to supervised, unsupervised or mixed‐objective tasks.",
+    "While deep learning powers diverse real‐world applications (healthcare diagnostics, visual recognition, text analytics, cybersecurity, IoT), model design remains challenging due to data variability and a lack of interpretability, motivating research on robust training algorithms and explainable architectures."
+  ],
+  "visited": [
+    "https://link.springer.com/article/10.1007/s42979-021-00815-1"
+  ]
+}

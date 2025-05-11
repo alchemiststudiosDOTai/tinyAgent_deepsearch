@@ -1,0 +1,9 @@
+Research on: quantum computing basics
+
+FINDINGS:
+1. The development of quantum computers is currently in its early stages, with significant challenges in scalability and fault tolerance, yet they promise breakthroughs in areas like optimization and machine learning.
+2. Quantum computing operates on the principles of quantum theory, where qubits can exist in multiple states simultaneously, allowing for complex computations that exceed classical computing capabilities.
+
+SOURCES:
+1. https://www.bluequbit.io/quantum-computing-basics
+2. https://www.quantum-inspire.com/kbase/introduction-to-quantum-computing/

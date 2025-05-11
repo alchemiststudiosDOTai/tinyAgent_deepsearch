@@ -1,9 +1,9 @@
 """
-Custom exceptions for the tinyAgent_deepsearch library.
+Custom exceptions for the tinyagent_deepsearch library.
 """
 
 class TinyAgentDeepSearchError(Exception):
-    """Base exception class for tinyAgent_deepsearch errors."""
+    """Base exception class for tinyagent_deepsearch errors."""
     pass
 
 class MissingAPIKeyError(TinyAgentDeepSearchError):
